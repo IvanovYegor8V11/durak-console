@@ -9,9 +9,9 @@
 ../inc/card.h
 iostream
 -
-
-/home/cristiano/durak-console/src/card.cpp
-card.h
+locale
+-
+codecvt
 -
 
 /home/cristiano/durak-console/src/main.cpp
