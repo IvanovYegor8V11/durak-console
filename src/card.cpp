@@ -11,7 +11,7 @@ wchar_t card::get_suit() {
 }
 
 void card::show_card() {
-    char rank_on_card[2] = {' ', ' '}; // Ensure it's initialized
+    char rank_on_card[2] = {' ', ' '};
 
     if (this->rank < 10) {
         rank_on_card[1] = '0' + this->rank;
