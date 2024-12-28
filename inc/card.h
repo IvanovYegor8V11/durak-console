@@ -2,14 +2,18 @@
 #define CARD_H
 
 #include <iostream>
+#include <locale>
+#include <codecvt>
 
 class card {
     uint8_t rank;
-    char suit;
+    wchar_t suit;
 
 public:
+    card(uint8_t rank = 0, wchar_t suit = '\0');
     uint8_t get_rank();
-    char get_suit();
+    wchar_t get_suit();
+    void show_card();
 };
 
-#endif
+#endif /*CARD_H*/
