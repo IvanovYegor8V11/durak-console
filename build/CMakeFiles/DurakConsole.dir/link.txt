@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/DurakConsole.dir/src/card.cpp.o CMakeFiles/DurakConsole.dir/src/main.cpp.o  -o DurakConsole 

@@ -1,0 +1,3 @@
+/home/cristiano/durak-console/build/CMakeFiles/rebuild_cache.dir
+/home/cristiano/durak-console/build/CMakeFiles/edit_cache.dir
+/home/cristiano/durak-console/build/CMakeFiles/DurakConsole.dir

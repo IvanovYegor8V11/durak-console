@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../inc/card.h
+iostream
+-
+
+/home/cristiano/durak-console/src/card.cpp
+card.h
+-
+
+/home/cristiano/durak-console/src/main.cpp
+card.h
+-
+
