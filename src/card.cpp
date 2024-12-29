@@ -10,40 +10,46 @@ wchar_t card::get_suit() {
     return suit;
 }
 
-void card::show_card() {
-    char rank_on_card[2] = {' ', ' '};
+std::string card::get_symbols() {
+    std::string symbols = "  ";
 
     if (this->rank < 10) {
-        rank_on_card[1] = '0' + this->rank;
+        symbols[1] = '0' + this->rank;
     }
     else if (this->rank == 10) {
-        rank_on_card[0] = '1';
-        rank_on_card[1] = '0';
+        symbols[0] = '1';
+        symbols[1] = '0';
     }
     else if (this->rank > 10) {
         switch (this->rank) {
             case 11:
-                rank_on_card[1] = 'J';
+                symbols[1] = 'J';
                 break;
             case 12:
-                rank_on_card[1] = 'Q';
+                symbols[1] = 'Q';
                 break;
             case 13:
-                rank_on_card[1] = 'K';
+                symbols[1] = 'K';
                 break;
             case 14:
-                rank_on_card[1] = 'A';
+                symbols[1] = 'A';
                 break;
             default:
-                rank_on_card[0] = 'E';
-                rank_on_card[1] = 'R';
+                symbols[0] = 'E';
+                symbols[1] = 'R';
                 break;
         }
     }
 
+    return symbols;
+}
+
+void card::show_card() {
+    std::string symbols = this->get_symbols();
+
     std::wcout << L"/¯¯¯¯¯¯¯\\\n";
     std::wcout << L"|       |\n";
-    std::wcout << L"|  " << this->suit << rank_on_card[0] << rank_on_card[1] << L"  |\n";
+    std::wcout << L"|  " << this->suit << symbols[0] << symbols[1] << L"  |\n";
     std::wcout << L"|       |\n";
     std::wcout << L"\\_______/\n";
 }

@@ -14,6 +14,7 @@ public:
     uint8_t get_rank();
     wchar_t get_suit();
     void show_card();
+    std::string get_symbols();
 };
 
 #endif /*CARD_H*/
