@@ -15,6 +15,7 @@ const wchar_t SUITS[] = {L'\u2660', L'\u2665', L'\u2666', L'\u2663'};
 std::vector<card> deck;
 std::vector<card> bot_hand;
 std::vector<card> user_hand;
+card trump_card;
 
 void make_deck() {
     for (const wchar_t& suit : SUITS) {
@@ -91,6 +92,40 @@ void show_hand(std::vector<card>& hand_to_show) {
     }
 }
 
+void sort_hand(std::vector<card>& hand_to_sort) {
+    uint8_t trump_edge = 0;
+    for (uint8_t i = 0; i < hand_to_sort.size(); i++) {
+        if (hand_to_sort[i].get_suit() != trump_card.get_suit()) {
+            continue;
+        }
+
+        std::swap(hand_to_sort[i], hand_to_sort[trump_edge]);
+        trump_edge++;
+    }
+
+    for (uint8_t i = 0; i < trump_edge; i++) {
+        uint8_t max_ind = i;
+        for (uint8_t j = i + 1; j < trump_edge; j++) {
+            if (hand_to_sort[max_ind].get_rank() < hand_to_sort[j].get_rank()) {
+                max_ind = j;
+            }
+        }
+
+        std::swap(hand_to_sort[i], hand_to_sort[max_ind]);
+    }
+
+    for (uint8_t i = trump_edge; i < hand_to_sort.size(); i++) {
+        uint8_t max_ind = i;
+        for (uint8_t j = i + 1; j < hand_to_sort.size(); j++) {
+            if (hand_to_sort[max_ind].get_rank() < hand_to_sort[j].get_rank()) {
+                max_ind = j;
+            }
+        }
+
+        std::swap(hand_to_sort[i], hand_to_sort[max_ind]);
+    }
+}
+
 int main() {
     srand(time(nullptr));
     std::locale::global(std::locale("en_US.UTF-8"));
@@ -109,6 +144,12 @@ int main() {
         deck.pop_back();
         // std::wcout << user_hand[i].get_rank() << user_hand[i].get_suit() << std::endl;
     }
+
+    trump_card = deck.back();
+    deck.pop_back();
+
+    trump_card.show_card();
+    sort_hand(user_hand);
 
     // show_hand(bot_hand);
     show_hand(user_hand);
