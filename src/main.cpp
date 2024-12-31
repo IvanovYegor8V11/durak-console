@@ -16,6 +16,8 @@ std::vector<card> deck;
 std::vector<card> bot_hand;
 std::vector<card> user_hand;
 card* trump_card;
+uint8_t bot_hand_trump_edge = 0;
+uint8_t user_hand_trump_edge = 0;
 
 std::string set_color_mode(wchar_t suit) {
     std::string color_code;
@@ -50,6 +52,15 @@ void shuffle_deck() {
     for (uint8_t i = 0; i < deck.size(); i++) {
         uint8_t ind = rand() % deck.size();
         std::swap(deck[i], deck[ind]);
+    }
+}
+
+void start_card_distribution() {
+    for (uint8_t i = 0; i < BASE_HAND_SIZE; i++) {
+        bot_hand.push_back(deck.back());
+        deck.pop_back();
+        user_hand.push_back(deck.back());
+        deck.pop_back();
     }
 }
 
@@ -148,7 +159,7 @@ void sort_hand(std::vector<card>& hand_to_sort) {
     }
 }
 
-void show_game_field() {
+void show_game_stat() {
     uint8_t deck_size = deck.size();
     std::string trump_card_symbols = trump_card->get_symbols();
     std::string color_code = set_color_mode(trump_card->get_suit());
@@ -163,6 +174,70 @@ void show_game_field() {
     std::wcout << L"\\_______/\n";
 }
 
+uint8_t find_trump_edge(std::vector<card>& hand_to_find_in) {
+    uint8_t trump_edge = 0;
+    wchar_t trump_card_suit = trump_card->get_suit();
+    for (uint8_t i = 0; i < hand_to_find_in.size(); i++) {
+        if (hand_to_find_in[i].get_suit() != trump_card_suit) {
+            break;
+        }
+
+        trump_edge++;
+    }
+
+    return trump_edge;
+}
+
+bool min_rank_definer(uint8_t user_start_ind, uint8_t bot_start_ind, uint8_t user_end_ind = 0, uint8_t bot_end_ind = 0) {
+    uint8_t cur_user_min_ind = user_start_ind;
+    uint8_t cur_user_min_rank = user_hand[cur_user_min_ind].get_rank();
+    uint8_t cur_bot_min_ind = bot_start_ind;
+    uint8_t cur_bot_min_rank = bot_hand[cur_bot_min_ind].get_rank();
+
+    while (cur_user_min_ind >= user_end_ind || cur_bot_min_ind >= bot_end_ind) {
+        if (cur_bot_min_rank > cur_user_min_rank) {
+            return true;
+        }
+        else if (cur_bot_min_rank < cur_user_min_rank) {
+            return false;
+        }
+
+        cur_user_min_ind--;
+        cur_bot_min_ind--;
+
+        uint8_t next_user_min_rank;
+        do {
+            next_user_min_rank = user_hand[cur_user_min_ind].get_rank();
+        }
+        while (next_user_min_rank == cur_user_min_rank);
+        cur_user_min_rank = next_user_min_rank;
+
+        uint8_t next_bot_min_rank;
+        do {
+            next_bot_min_rank = bot_hand[cur_bot_min_ind].get_rank();
+        }
+        while (next_bot_min_rank == cur_bot_min_rank);
+        cur_bot_min_rank = next_bot_min_rank;        
+    }
+
+    return false;    
+}
+
+bool first_player_definer() {
+    if (bot_hand_trump_edge == 0 && user_hand_trump_edge != 0) {
+        return true;
+    }
+    else if (bot_hand_trump_edge != 0 && user_hand_trump_edge == 0) {
+        return false;
+    }
+    else if (bot_hand_trump_edge == 0 && user_hand_trump_edge == 0) {
+        return min_rank_definer(BASE_HAND_SIZE - 1, BASE_HAND_SIZE - 1, user_hand_trump_edge, bot_hand_trump_edge);
+    }
+    else {
+        return min_rank_definer(user_hand_trump_edge - 1, bot_hand_trump_edge - 1);
+    }
+}
+
 int main() {
     srand(time(nullptr));
     std::locale::global(std::locale("en_US.UTF-8"));
@@ -171,23 +246,29 @@ int main() {
     make_deck();
     shuffle_deck();
 
-    for (uint8_t i = 0; i < BASE_HAND_SIZE; i++) {
-        bot_hand.push_back(deck.back());
-        deck.pop_back();
-        user_hand.push_back(deck.back());
-        deck.pop_back();
-        // std::wcout << user_hand[i].get_rank() << user_hand[i].get_suit() << std::endl;
-    }
+    start_card_distribution();
 
     deck.insert(deck.begin(), deck.back());
     deck.pop_back();
     trump_card = &deck[0];
 
-    show_game_field();
+    show_game_stat();
     sort_hand(user_hand);
+    sort_hand(bot_hand);
+    bot_hand_trump_edge = find_trump_edge(bot_hand);
+    user_hand_trump_edge = find_trump_edge(user_hand);
 
-    // show_hand(bot_hand);
+    show_hand(bot_hand);
+    std::wcout << find_trump_edge(bot_hand) << std::endl;
     show_hand(user_hand);
+    std::wcout << find_trump_edge(user_hand) << std::endl;
+
+    if (first_player_definer()) {
+        std::wcout << L"User plays first\n";
+    }
+    else {
+        std::wcout <<  L"Bot plays first\n";
+    }    
 
     return 0;
 }
