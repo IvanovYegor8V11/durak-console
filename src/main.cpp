@@ -238,18 +238,10 @@ bool first_player_definer() {
     }
 }
 
-bool five_suits_checker(std::vector<card>& hand_to_check, uint8_t hand_trump_edge) {
-    if (hand_to_check[4].get_suit() == trump_card->get_suit()) {
-        return false;
-    }
-
-    if (hand_trump_edge > 1) {
-        return true;
-    }
-
+bool five_suits_checker(std::vector<card>& hand_to_check) {
     wchar_t suit_to_check;
     uint8_t suit_counter;
-    for (uint8_t i = hand_trump_edge; i < 2; i++) {
+    for (uint8_t i = 0; i < 2; i++) {
         suit_to_check = hand_to_check[i].get_suit();
         suit_counter = 1;
         for (uint8_t j = i + 1; j < BASE_HAND_SIZE; j++) {
@@ -271,10 +263,13 @@ int main() {
     std::locale::global(std::locale("en_US.UTF-8"));
     std::wcout.imbue(std::locale());
 
-    make_deck();
-    // shuffle_deck();
+    do {
+        make_deck();
+        shuffle_deck();
 
-    start_card_distribution();
+        start_card_distribution();
+    }
+    while (!five_suits_checker(user_hand) || !five_suits_checker(user_hand));
 
     deck.insert(deck.begin(), deck.back());
     deck.pop_back();
@@ -291,19 +286,12 @@ int main() {
     show_hand(user_hand);
     std::wcout << find_trump_edge(user_hand) << std::endl;
 
-    if (five_suits_checker(user_hand, user_hand_trump_edge) && five_suits_checker(bot_hand, bot_hand_trump_edge)) {
-        std::wcout << L"Game can continue\n";
-    }
-    else {
-        std::wcout <<  L"Need to re-deal the cards\n";
-    }
-
-    /*if (first_player_definer()) {
+    if (first_player_definer()) {
         std::wcout << L"User plays first\n";
     }
     else {
         std::wcout <<  L"Bot plays first\n";
-    }*/
+    }
 
     return 0;
 }
