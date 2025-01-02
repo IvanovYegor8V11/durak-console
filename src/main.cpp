@@ -15,9 +15,12 @@ const wchar_t SUITS[] = {L'\u2660', L'\u2665', L'\u2666', L'\u2663'};
 std::vector<card> deck;
 std::vector<card> bot_hand;
 std::vector<card> user_hand;
+std::vector<card> attacking_cards(6);
+std::vector<card> defending_cards(6);
 card* trump_card;
 uint8_t bot_hand_trump_edge = 0;
 uint8_t user_hand_trump_edge = 0;
+bool defending = true; /*if true - user defends, else - bot defends*/
 
 std::string set_color_mode(wchar_t suit) {
     std::string color_code;
@@ -89,11 +92,12 @@ void show_hand(std::vector<card>& hand_to_show) {
                 break;
             }
 
+            wchar_t cur_suit = hand_to_show[j].get_suit();
             std::string rank_on_card = hand_to_show[j].get_symbols();
-            std::string color_code = set_color_mode(hand_to_show[j].get_suit());
+            std::string color_code = set_color_mode(cur_suit);
 
             std::wcout << L"|  " << color_code[0] << color_code[1] << color_code[2] << color_code[3] << color_code[4] 
-                << hand_to_show[j].get_suit() << L"\033[0m" << rank_on_card[0] << rank_on_card[1] << L"  |";
+                << cur_suit << L"\033[0m" << rank_on_card[0] << rank_on_card[1] << L"  |";
         }
         std::wcout << std::endl;
 
@@ -159,7 +163,7 @@ void sort_hand(std::vector<card>& hand_to_sort) {
     }
 }
 
-void show_game_stat() {
+void show_deck() {
     uint8_t deck_size = deck.size();
     std::string trump_card_symbols = trump_card->get_symbols();
     std::string color_code = set_color_mode(trump_card->get_suit());
@@ -172,6 +176,113 @@ void show_game_stat() {
         << L"bot hand size: " << bot_hand.size() << std::endl;
     std::wcout << L"|       |____/\n";
     std::wcout << L"\\_______/\n";
+}
+
+void show_game_field_row(uint8_t start, uint8_t end) {
+    std::wcout << L"                  ";
+    for (uint8_t i = start; i < end; i++) {
+        std::wcout << L"   |" << i << L"|     ";            
+    }
+    std::wcout << std::endl;
+    
+    std::wcout << L"                  ";
+    for (uint8_t i = start; i < end; i++) {
+        if (attacking_cards[i].get_rank() == 0) {
+            std::wcout << L"|¯¯¯¯¯¯¯|  ";
+        }
+        else if (defending_cards[i].get_rank() != 0){
+            wchar_t cur_suit = attacking_cards[i].get_suit();
+            std::string rank_on_card = attacking_cards[i].get_symbols();
+            std::string color_code = set_color_mode(cur_suit);
+            std::wcout << L"/¯¯" << color_code[0] << color_code[1] << color_code[2] << color_code[3] << color_code[4] 
+                << cur_suit << L"\033[0m" << rank_on_card[0] << rank_on_card[1] << L"¯¯\\  ";
+        }
+        else {
+            std::wcout << L"/¯¯¯¯¯¯¯\\  ";
+        }
+    }
+    std::wcout << std::endl;
+
+    std::wcout << L"                  ";
+    for (uint8_t i = start; i < end; i++) {
+        if (attacking_cards[i].get_rank() == 0) {
+            std::wcout << L"|       |  ";
+        }
+        else if (defending_cards[i].get_rank() != 0){
+            std::wcout << L"| /¯¯¯¯¯¯¯\\";
+        }
+        else {
+            std::wcout << L"|       |  ";
+        }
+    }
+    std::wcout << std::endl;
+
+    std::wcout << L"                  ";
+    for (uint8_t i = start; i < end; i++) {
+        if (attacking_cards[i].get_rank() == 0) {
+            std::wcout << L"|   +   |  ";
+        }
+        else if (defending_cards[i].get_rank() != 0){
+            std::wcout << L"| |       |";
+        }
+        else {
+            wchar_t cur_suit = attacking_cards[i].get_suit();
+            std::string rank_on_card = attacking_cards[i].get_symbols();
+            std::string color_code = set_color_mode(cur_suit);
+            std::wcout << L"|  " << color_code[0] << color_code[1] << color_code[2] << color_code[3] << color_code[4] 
+                << cur_suit << L"\033[0m" << rank_on_card[0] << rank_on_card[1] << L"  |  ";
+        }
+    }
+    std::wcout << std::endl;
+
+    std::wcout << L"                  ";
+    for (uint8_t i = start; i < end; i++) {
+        if (defending_cards[i].get_rank() != 0){
+            wchar_t cur_suit = defending_cards[i].get_suit();
+            std::string rank_on_card = defending_cards[i].get_symbols();
+            std::string color_code = set_color_mode(cur_suit);
+            std::wcout << L"| |  " << color_code[0] << color_code[1] << color_code[2] << color_code[3] << color_code[4] 
+                << cur_suit << L"\033[0m" << rank_on_card[0] << rank_on_card[1] << L"  |  ";
+        }
+        else {
+            std::wcout << L"|       |  ";
+        }
+    }
+    std::wcout << std::endl;
+
+    std::wcout << L"                  ";
+    for (uint8_t i = start; i < end; i++) {
+        if (attacking_cards[i].get_rank() == 0) {
+            std::wcout << L"|_______|  ";
+        }
+        else if (defending_cards[i].get_rank() != 0){
+            std::wcout << L"\\_|       |";
+        }
+        else {
+            std::wcout << L"\\_______/  ";
+        }
+    }
+    std::wcout << std::endl;
+
+    std::wcout << L"                  ";
+    for (uint8_t i = start; i < end; i++) {
+        if (attacking_cards[i].get_rank() == 0) {
+            std::wcout << L"           ";
+        }
+        else if (defending_cards[i].get_rank() != 0){
+            std::wcout << L"  \\_______/";
+        }
+        else {
+            std::wcout << L"\\_______/  ";
+        }
+    }
+    std::wcout << std::endl;
+    std::wcout << std::endl;
+}
+
+void show_game_field() {
+    show_game_field_row(0, BASE_HAND_SIZE / 2);
+    show_game_field_row(BASE_HAND_SIZE / 2, BASE_HAND_SIZE);
 }
 
 uint8_t find_trump_edge(std::vector<card>& hand_to_find_in) {
@@ -262,27 +373,37 @@ int main() {
     srand(time(nullptr));
     std::locale::global(std::locale("en_US.UTF-8"));
     std::wcout.imbue(std::locale());
+    make_deck();
 
-    do {
-        make_deck();
+    bool card_distribution_checker;
+    do {        
         shuffle_deck();
-
         start_card_distribution();
+        card_distribution_checker = five_suits_checker(user_hand) && five_suits_checker(bot_hand);
+
+        if (!card_distribution_checker) {
+            deck.insert(deck.end(), std::make_move_iterator(user_hand.begin()), std::make_move_iterator(user_hand.end()));
+            user_hand.clear();
+            deck.insert(deck.end(), std::make_move_iterator(bot_hand.begin()), std::make_move_iterator(bot_hand.end()));
+            bot_hand.clear();            
+        }
+            
     }
-    while (!five_suits_checker(user_hand) || !five_suits_checker(user_hand));
+    while (!card_distribution_checker);
 
     deck.insert(deck.begin(), deck.back());
     deck.pop_back();
     trump_card = &deck[0];
 
-    show_game_stat();
+    show_deck();
     sort_hand(user_hand);
     sort_hand(bot_hand);
     bot_hand_trump_edge = find_trump_edge(bot_hand);
     user_hand_trump_edge = find_trump_edge(user_hand);
 
-    show_hand(bot_hand);
-    std::wcout << find_trump_edge(bot_hand) << std::endl;
+    // show_hand(bot_hand);
+    // std::wcout << find_trump_edge(bot_hand) << std::endl;
+    show_game_field();
     show_hand(user_hand);
     std::wcout << find_trump_edge(user_hand) << std::endl;
 

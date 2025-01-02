@@ -10,7 +10,8 @@ class card {
     wchar_t suit;
 
 public:
-    card(uint8_t rank = 0, wchar_t suit = '\0');
+    card();
+    card(uint8_t rank, wchar_t suit);
     uint8_t get_rank();
     wchar_t get_suit();
     void show_card();

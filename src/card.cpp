@@ -1,5 +1,7 @@
 #include <card.h>
 
+card::card() : rank(0), suit(' ') {}
+
 card::card(uint8_t rank, wchar_t suit) : rank(rank), suit(suit) {}
 
 uint8_t card::get_rank() {
