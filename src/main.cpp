@@ -237,12 +237,12 @@ void show_game_field_row(uint8_t start, uint8_t end) {
 
     std::wcout << L"                  ";
     for (uint8_t i = start; i < end; i++) {
-        if (defending_cards[i].get_rank() != 0){
+        if (attacking_cards[i].get_rank() != 0 && defending_cards[i].get_rank() != 0){
             wchar_t cur_suit = defending_cards[i].get_suit();
             std::string rank_on_card = defending_cards[i].get_symbols();
             std::string color_code = set_color_mode(cur_suit);
             std::wcout << L"| |  " << color_code[0] << color_code[1] << color_code[2] << color_code[3] << color_code[4] 
-                << cur_suit << L"\033[0m" << rank_on_card[0] << rank_on_card[1] << L"  |  ";
+                << cur_suit << L"\033[0m" << rank_on_card[0] << rank_on_card[1] << L"  |";
         }
         else {
             std::wcout << L"|       |  ";
@@ -266,14 +266,11 @@ void show_game_field_row(uint8_t start, uint8_t end) {
 
     std::wcout << L"                  ";
     for (uint8_t i = start; i < end; i++) {
-        if (attacking_cards[i].get_rank() == 0) {
-            std::wcout << L"           ";
-        }
-        else if (defending_cards[i].get_rank() != 0){
+        if (attacking_cards[i].get_rank() != 0 && defending_cards[i].get_rank() != 0){
             std::wcout << L"  \\_______/";
         }
         else {
-            std::wcout << L"\\_______/  ";
+            std::wcout << L"           ";
         }
     }
     std::wcout << std::endl;
@@ -374,6 +371,18 @@ int main() {
     std::locale::global(std::locale("en_US.UTF-8"));
     std::wcout.imbue(std::locale());
     make_deck();
+
+    // card new_attacking_card(RANKS[rand() % 9], SUITS[rand() % 4]);
+    // attacking_cards[0] = new_attacking_card;
+
+    // card new_defending_card(RANKS[rand() % 9], SUITS[rand() % 4]);
+    // defending_cards[0] = new_defending_card;
+
+    // card another_new_defending_card(RANKS[rand() % 9], SUITS[rand() % 4]);
+    // defending_cards[1] = another_new_defending_card;
+
+    // card another_new_attacking_card(RANKS[rand() % 9], SUITS[rand() % 4]);
+    // attacking_cards[1] = another_new_attacking_card;
 
     bool card_distribution_checker;
     do {        
