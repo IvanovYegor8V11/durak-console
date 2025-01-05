@@ -365,9 +365,9 @@ bool five_suits_checker(std::vector<card>& hand_to_check) {
     return true;
 }
 
-bool can_bot_defend(card* card_to_beat, uint8_t card_ind) {
-    uint8_t rank = card_to_beat->get_rank();
-    wchar_t suit = card_to_beat->get_suit();
+bool can_bot_defend(card& card_to_beat, uint8_t& card_ind) {
+    uint8_t rank = card_to_beat.get_rank();
+    wchar_t suit = card_to_beat.get_suit();
     bool is_card_trump = (suit == trump_card->get_suit());
     int8_t i = is_card_trump ? bot_hand_trump_edge - 1 : bot_hand.size() - 1;
     int8_t bot_hand_ind = -1;
@@ -400,6 +400,34 @@ void fill_hand(std::vector<card>& hand_to_fill) {
         get_card_from_deck(hand_to_fill);
     }
     sort_hand(hand_to_fill);
+}
+
+bool can_attack(card& attacking_card, uint8_t& game_ind) {
+    if (game_ind == 0) {
+        return true;
+    }
+
+    uint8_t attacking_rank = attacking_card.get_rank();
+    for (uint8_t i = 0; i < game_ind; i++) {
+        if (attacking_cards[i].get_rank() == attacking_rank) {
+            return true;
+        }
+
+        if (defending_cards[i].get_rank() == attacking_rank) {
+            return true;
+        }
+    }
+
+    return false;    
+}
+
+void show_all() {
+    show_deck();
+    show_hand(bot_hand);
+    std::wcout << find_trump_edge(bot_hand) << std::endl;
+    show_game_field();
+    show_hand(user_hand);
+    std::wcout << find_trump_edge(user_hand) << std::endl;
 }
 
 int main() {
@@ -462,90 +490,99 @@ int main() {
                     break;
                 }
 
-                uint16_t number_of_card;
-                do {
-                    std::wcout << L"Choose the card from your hand to play: ";
-                    std::wcin >> number_of_card;
+                bool can_user_attack = false;
+                for (uint8_t i = 0; i < user_hand.size(); i++) {
+                    if (can_attack(user_hand[i], game_ind)) {
+                        can_user_attack = true;
+                        break;
+                    }
                 }
-                while (number_of_card < 0 || number_of_card >= user_hand.size());
 
-                attacking_cards[game_ind] = user_hand[number_of_card];
-                user_hand.erase(user_hand.begin() + number_of_card);
-                user_hand_trump_edge = find_trump_edge(user_hand);
+                if (can_user_attack) {
+                    uint16_t number_of_card;
+                    do {
+                        std::wcout << L"Choose the card from your hand to play: ";
+                        std::wcin >> number_of_card;
+                    }
+                    while (number_of_card < 0 || number_of_card >= user_hand.size());
 
-                show_deck();
-                show_hand(bot_hand);
-                std::wcout << find_trump_edge(bot_hand) << std::endl;
-                show_game_field();
-                show_hand(user_hand);
-                std::wcout << find_trump_edge(user_hand) << std::endl;
-
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-
-                if (can_bot_defend(&attacking_cards[game_ind], game_ind)) {
-                    std::wcout << L"Bot beated the card\n";
-
-                    show_deck();
-                    show_hand(bot_hand);
-                    std::wcout << find_trump_edge(bot_hand) << std::endl;
-                    show_game_field();
-                    show_hand(user_hand);
-                    std::wcout << find_trump_edge(user_hand) << std::endl;
-
-                    game_ind++;
-                    if (game_ind == 6) {
-                        game_ind = 0;
-                        fill_hand(user_hand);
+                    if (can_attack(user_hand[number_of_card], game_ind)) {
+                        attacking_cards[game_ind] = user_hand[number_of_card];
+                        user_hand.erase(user_hand.begin() + number_of_card);
                         user_hand_trump_edge = find_trump_edge(user_hand);
+                    }
+                    else {
+                        std::wcout << L"You can\'t use this card\n";
+                        show_all();
+                        continue;
+                    }
+                    
+
+                    show_all();
+
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+                    if (can_bot_defend(attacking_cards[game_ind], game_ind)) {
+                        std::wcout << L"Bot beated the card\n";
+
+                        show_all();
+
+                        game_ind++;
+                        if (game_ind == 6) {
+                            game_ind = 0;
+                            fill_hand(user_hand);
+                            user_hand_trump_edge = find_trump_edge(user_hand);
+
+                            for (uint8_t i = 0; i < BASE_HAND_SIZE; i++) {
+                                if (attacking_cards[i].get_rank() != 0) {
+                                    attacking_cards[i] = empty_card;
+                                }
+                                
+                                if (defending_cards[i].get_rank() != 0) {
+                                    defending_cards[i] = empty_card;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        std::wcout << L"Bot took the card(s)\n";
 
                         for (uint8_t i = 0; i < BASE_HAND_SIZE; i++) {
                             if (attacking_cards[i].get_rank() != 0) {
+                                bot_hand.push_back(attacking_cards[i]);
                                 attacking_cards[i] = empty_card;
                             }
                             
                             if (defending_cards[i].get_rank() != 0) {
+                                bot_hand.push_back(defending_cards[i]);
                                 defending_cards[i] = empty_card;
                             }
-                        }
+                        }            
+                        sort_hand(bot_hand);
+
+                        fill_hand(user_hand);
+                        user_hand_trump_edge = find_trump_edge(user_hand);
+                        bot_hand_trump_edge = find_trump_edge(bot_hand);
+
+                        show_all();
+
+                        game_ind = 0;
                     }
                 }
                 else {
-                    std::wcout << L"Bot took the card(s)\n";
-
-                    for (uint8_t i = 0; i < BASE_HAND_SIZE; i++) {
-                        if (attacking_cards[i].get_rank() != 0) {
-                            bot_hand.push_back(attacking_cards[i]);
-                            attacking_cards[i] = empty_card;
-                        }
-                        
-                        if (defending_cards[i].get_rank() != 0) {
-                            bot_hand.push_back(defending_cards[i]);
-                            defending_cards[i] = empty_card;
-                        }
-                    }            
-                    sort_hand(bot_hand);
-
+                    defending = true;
                     fill_hand(user_hand);
+                    fill_hand(bot_hand);
                     user_hand_trump_edge = find_trump_edge(user_hand);
                     bot_hand_trump_edge = find_trump_edge(bot_hand);
-
-                    show_deck();
-                    show_hand(bot_hand);
-                    std::wcout << find_trump_edge(bot_hand) << std::endl;
-                    show_game_field();
-                    show_hand(user_hand);
-                    std::wcout << find_trump_edge(user_hand) << std::endl;
-
-                    game_ind = 0;
                 }
+                
                 break;
             }
             case true:
                 game = false;
                 break;
         }
-
-        
     }
 
     return 0;
