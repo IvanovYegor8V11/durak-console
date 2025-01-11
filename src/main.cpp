@@ -2,6 +2,7 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <stdlib.h>
 
 /*
 ♠ Spades:      \u2660
@@ -424,7 +425,7 @@ bool can_attack(card& attacking_card, uint8_t& game_ind) {
 }
 
 void show_all() {
-    std::wcout << L"\x1B[2J\x1B[H";
+    system("clear");     // #include <stdlib.h> system("cls"); or std::wcout << L"\x1B[2J\x1B[H";
     std::wcout << game_ind << std::endl;
     show_deck();
     // show_hand(bot_hand);
@@ -684,6 +685,18 @@ int main() {
                 break;
             }
         }
+    }
+
+    uint8_t user_hand_size = user_hand.size();
+    uint8_t bot_hand_size = bot_hand.size();
+    if (user_hand_size < bot_hand_size) {
+        std::wcout << L"User wins!!!\n";
+    }
+    else if (user_hand_size > bot_hand_size) {
+        std::wcout << L"Bot wins!!!\n";
+    }
+    else {
+        std::wcout << L"It\'s draw.\n";
     }
 
     return 0;
